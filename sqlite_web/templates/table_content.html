@@ -28,6 +28,7 @@
   <table class="table table-striped">
     <thead>
       <tr>
+        <th></th>
         {% for column in columns %}
           <th>
             <a href="./?ordering={% if ordering == column %}-{% endif %}{{ column }}">{{ column }}</a>
@@ -38,7 +39,11 @@
     <tbody>
       {% for row in query %}
         <tr>
-          <td></td>
+          <td>
+            <a href="">
+              <i class="fa fa-trash" aria-hidden="true"></i>
+            </a>
+          </td>
           {% for field in field_names %}
             {% set value = row[field] %}
             <td>
