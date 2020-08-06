@@ -17,7 +17,7 @@ setup(
     long_description='Web-based SQLite database browser.',
     author='Charles Leifer',
     author_email='coleifer@gmail.com',
-    url='https://github.com/coleifer/sqlite-web',
+    url='https://github.com/jmalab1/sqlite-web',
     license='MIT',
     install_requires=[
         'flask',
