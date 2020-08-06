@@ -32,7 +32,7 @@
   </head>
 
   <body class="{% block body_class %}{% endblock %}">
-    <div class="container">
+    <div class="container-fluid">
       {% block page_header %}
         <div class="page-header">
           {% block content_header %}
@@ -48,11 +48,11 @@
         </div>
       {% endblock %}
       <div class="row">
-        <div class="col-3" id="sidebar">
+        <div class="col-2" id="sidebar">
           {% block sidebar %}{% endblock %}
           {% block logout %}{% if login_required %}<a href="{{ url_for('logout') }}">Log-out</a>{% endif %}{% endblock %}
         </div>
-        <div class="col-9" id="content">
+        <div class="col-10" id="content">
           {% for category, message in get_flashed_messages(with_categories=true) %}
             <div class="alert alert-{{ category }} alert-dismissable">
               <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
