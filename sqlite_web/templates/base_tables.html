@@ -7,7 +7,7 @@
     {% for table_name in dataset.tables|sort %}
       {% if table_name not in virtual_tables_corollary %}
       <li class="nav-item table-link">
-        <a class="nav-link{% if table and table_name == table %} active{% endif %}" href="{{ url_for('table_structure', table=table_name) }}">
+        <a class="nav-link{% if table and table_name == table %} active{% endif %}" href="{{ url_for('table_structure', table=table_name) }}/content/">
           {{ table_name }}
           {% if table_name in virtual_tables %}
             <sup>(v)</sup>
