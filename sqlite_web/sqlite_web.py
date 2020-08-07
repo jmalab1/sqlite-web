@@ -461,7 +461,12 @@ def table_content(table):
 
         deleteArray = []
         for key in deleteData:
-            deleteArray.append(str(key) + " = \"" + str(deleteData[key]) + "\"\n")
+            if str(deleteData[key]) == 'None':
+                deleteArray.append(str(key) + " IS NULL\n")
+            elif str(deleteData[key]) == 'True' or str(deleteData[key]) == 'False':
+                deleteArray.append(str(key) + " = \"" + str(deleteData[key]).lower() + "\"\n")
+            else:
+                deleteArray.append(str(key) + " = \"" + str(deleteData[key]) + "\"\n")
 
         deleteString = "AND ".join(deleteArray)
 
