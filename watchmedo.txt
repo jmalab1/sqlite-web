@@ -1,5 +1,5 @@
 watchmedo shell-command \
  --patterns="*.py;*.txt;*.html;*.css" \
  --recursive \
- --command='pip install .; kill $(lsof -t -i:8089); sqlite_web -x --port 8089 ~/Documents/Git\ Projects/application.db;' \
+ --command='kill $(lsof -t -i:8089); pip install .; sqlite_web -x -d --port 8089 ~/Documents/Git\ Projects/application.db;' \
  .

@@ -11,10 +11,16 @@ import sys
 import threading
 import time
 import webbrowser
+import json
+import yaml
+import logging
+import ast
 from collections import namedtuple, OrderedDict
 from functools import wraps
 from getpass import getpass
 from io import TextIOWrapper
+
+logging.basicConfig(level=logging.DEBUG)
 
 # Py2k compat.
 if sys.version_info[0] == 2:
@@ -448,6 +454,19 @@ def table_content(table):
     table_sql = dataset.query(
         'SELECT sql FROM sqlite_master WHERE tbl_name = ? AND type = ?',
         [table, 'table']).fetchone()[0]
+
+    delete = request.args.get('delete')
+    if delete:
+        deleteData = ast.literal_eval(delete)
+
+        deleteArray = []
+        for key in deleteData:
+            deleteArray.append(str(key) + " = \"" + str(deleteData[key]) + "\"\n")
+
+        deleteString = "AND ".join(deleteArray)
+
+        sql = 'DELETE FROM "%s" \nWHERE %s' % (table, deleteString)
+        return redirect(url_for('table_query', table=table, sql=sql))
 
     return render_template(
         'table_content.html',

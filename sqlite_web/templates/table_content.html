@@ -40,7 +40,7 @@
       {% for row in query %}
         <tr>
           <td>
-            <a href="">
+            <a href="{{ url_for('table_content', table=table, delete=row ) }} ">
               <i class="fa fa-trash" aria-hidden="true"></i>
             </a>
           </td>
