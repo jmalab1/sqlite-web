@@ -190,6 +190,14 @@ class SqliteDataSet(DataSet):
             '%s_%s' % (virtual_table, suffix) for suffix in suffixes
             for virtual_table in virtual_tables)
 
+    def get_all_rows(self, table):
+        cursor = self.query(
+            'SELECT * FROM sqlite_master '
+            'WHERE type = ? AND sql LIKE ? '
+            'ORDER BY name',
+            ('table', 'CREATE VIRTUAL TABLE%'))
+        return set([row[0] for row in cursor.fetchall()])
+
 #
 # Flask views.
 #
@@ -471,6 +479,40 @@ def table_content(table):
         deleteString = "AND ".join(deleteArray)
 
         sql = 'DELETE FROM "%s" \nWHERE %s' % (table, deleteString)
+
+        return redirect(url_for('table_query', table=table, sql=sql))
+
+    edit = request.args.get('edit')
+    if edit:
+        editData = ast.literal_eval(edit)
+        editArray = []
+
+        for key in editData:
+            if str(editData[key]) == 'None':
+                editArray.append(str(key) + " IS NULL")
+            elif str(editData[key]) == 'True':
+                editArray.append(str(key) + " = \"1\"")
+            elif str(editData[key]) == 'False':
+                editArray.append(str(key) + " = \"0\"")
+            else:
+                editArray.append(str(key) + " = \"" + str(editData[key]) + "\"")
+
+        editString = ",\n".join(editArray)
+
+        editArray_c = []
+
+        for keyc in editData:
+            if str(editData[keyc]) == 'None':
+                editArray_c.append(str(keyc) + " IS NULL\n")
+            elif str(editData[keyc]) == 'True' or str(editData[keyc]) == 'False':
+                editArray_c.append(str(keyc) + " = \"" + str(editData[keyc]).lower() + "\"\n")
+            else:
+                editArray_c.append(str(keyc) + " = \"" + str(editData[keyc]) + "\"\n")
+
+        editString_c = "AND ".join(editArray_c)
+
+        sql = 'UPDATE "%s" \nSET %s \nWHERE %s' % (table, editString, editString_c)
+
         return redirect(url_for('table_query', table=table, sql=sql))
 
     return render_template(

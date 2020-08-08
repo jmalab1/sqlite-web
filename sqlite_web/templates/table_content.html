@@ -43,6 +43,9 @@
             <a href="{{ url_for('table_content', table=table, delete=row ) }} ">
               <i class="fa fa-trash" aria-hidden="true"></i>
             </a>
+            <a href="{{ url_for('table_content', table=table, edit=row ) }} ">
+              <i class="fa fa-pencil" aria-hidden="true"></i>
+            </a>
           </td>
           {% for field in field_names %}
             {% set value = row[field] %}
