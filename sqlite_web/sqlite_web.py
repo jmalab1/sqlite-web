@@ -238,7 +238,8 @@ def database_view():
     dir = args[1]
 
     databases = []
-    for filename in glob.iglob(dir + '**/*.db', recursive=True):
+
+    for filename in glob.glob(dir + '**/*.db', recursive=True):
         databases.append(filename)
 
     return render_template(
@@ -249,10 +250,9 @@ def database_view():
 def open_db():
     parser = get_option_parser()
     options, args = parser.parse_args()
-    databases = []
 
     db = request.args.get('database')
-    initialize_app(db)
+    initialize_app(db, options.read_only, None, options.url_prefix)
 
     return redirect(url_for('index'))
 
