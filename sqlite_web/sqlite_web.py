@@ -15,12 +15,15 @@ import json
 import yaml
 import logging
 import ast
+import glob
+import subprocess
+import time
 from collections import namedtuple, OrderedDict
 from functools import wraps
 from getpass import getpass
 from io import TextIOWrapper
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(filename='python.log',level=logging.DEBUG)
 
 # Py2k compat.
 if sys.version_info[0] == 2:
@@ -227,6 +230,27 @@ def require_table(fn):
             abort(404)
         return fn(table, *args, **kwargs)
     return inner
+
+@app.route('/databases/')
+def database_view():
+    databases = []
+    for filename in glob.iglob('/Users/jaysonmalabanan/Documents/' + '**/*.db', recursive=True):
+        databases.append(filename)
+
+    return render_template(
+        'databases.html',
+        databases=databases)
+
+@app.route('/database/', methods=['GET','POST'])
+def open_db():
+    parser = get_option_parser()
+    options, args = parser.parse_args()
+    databases = []
+
+    db = request.args.get('database')
+    initialize_app(db)
+
+    return redirect(url_for('index'))
 
 @app.route('/create-table/', methods=['POST'])
 def table_create():

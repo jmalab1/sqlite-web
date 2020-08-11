@@ -1,3 +1,4 @@
 sqlite_web.egg-info/
 build/
 dist/
+python.log
