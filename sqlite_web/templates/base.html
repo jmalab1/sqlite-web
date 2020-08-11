@@ -34,6 +34,8 @@
 
   <body class="{% block body_class %}{% endblock %}">
     <div class="container-fluid">
+      <br/>
+      <a href="{{ url_for('database_view') }}" class="btn btn-primary btn-sm" role="button">Databases</a>
       {% block page_header %}
         <div class="page-header">
           {% block content_header %}

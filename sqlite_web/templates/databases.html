@@ -18,7 +18,10 @@
 
   <body class="{% block body_class %}{% endblock %}">
     <div class="container-fluid">
-        <h1>Databases</h1>
+        <br/>
+        <a href="{{ url_for('index') }}" class="btn btn-primary btn-sm" role="button">Cancel</a><br/><br/>
+        <h2>Databases</h2>
+        <p>Choose a database to switch to.</p>
         {% for database in databases %}
             <a href="{{ url_for('open_db', database=database) }}">{{ database }}</a><br>
          {% endfor %}
