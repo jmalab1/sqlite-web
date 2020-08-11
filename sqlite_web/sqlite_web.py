@@ -233,8 +233,12 @@ def require_table(fn):
 
 @app.route('/databases/')
 def database_view():
+    parser = get_option_parser()
+    options, args = parser.parse_args()
+    dir = args[1]
+
     databases = []
-    for filename in glob.iglob('/Users/jaysonmalabanan/Documents/' + '**/*.db', recursive=True):
+    for filename in glob.iglob(dir + '**/*.db', recursive=True):
         databases.append(filename)
 
     return render_template(
