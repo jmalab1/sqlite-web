@@ -13,7 +13,14 @@
         full.toggle();
       });
       $('#table_content').DataTable({
-        "stateSave": true
+        "stateSave": true,
+        "columnDefs": [
+          { 
+            "orderable": false, 
+            "targets": 0
+          }
+        ],
+        "order": [[ 1, "asc" ]]
       });
     });
   </script>
