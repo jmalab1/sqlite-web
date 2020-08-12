@@ -460,36 +460,14 @@ def drop_trigger(table):
 @app.route('/<table>/content/')
 @require_table
 def table_content(table):
-    page_number = request.args.get('page') or ''
-    page_number = int(page_number) if page_number.isdigit() else 1
 
     dataset.update_cache(table)
     ds_table = dataset[table]
-    total_rows = ds_table.all().count()
-    rows_per_page = app.config['ROWS_PER_PAGE']
-    total_pages = int(math.ceil(total_rows / float(rows_per_page)))
-    # Restrict bounds.
-    page_number = min(page_number, total_pages)
-    page_number = max(page_number, 1)
 
-    previous_page = page_number - 1 if page_number > 1 else None
-    next_page = page_number + 1 if page_number < total_pages else None
-
-    query = ds_table.all().paginate(page_number, rows_per_page)
-
-    ordering = request.args.get('ordering')
-    if ordering:
-        field = ds_table.model_class._meta.columns[ordering.lstrip('-')]
-        if ordering.startswith('-'):
-            field = field.desc()
-        query = query.order_by(field)
+    query = ds_table.all()
 
     field_names = ds_table.columns
     columns = [f.column_name for f in ds_table.model_class._meta.sorted_fields]
-
-    table_sql = dataset.query(
-        'SELECT sql FROM sqlite_master WHERE tbl_name = ? AND type = ?',
-        [table, 'table']).fetchone()[0]
 
     delete = request.args.get('delete')
     if delete:
@@ -548,14 +526,8 @@ def table_content(table):
         columns=columns,
         ds_table=ds_table,
         field_names=field_names,
-        next_page=next_page,
-        ordering=ordering,
-        page=page_number,
-        previous_page=previous_page,
         query=query,
-        table=table,
-        total_pages=total_pages,
-        total_rows=total_rows)
+        table=table)
 
 @app.route('/<table>/query/', methods=['GET', 'POST'])
 @require_table
