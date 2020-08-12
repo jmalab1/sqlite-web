@@ -84,7 +84,6 @@ from playhouse.migrate import migrate
 
 CUR_DIR = os.path.realpath(os.path.dirname(__file__))
 DEBUG = False
-MAX_RESULT_SIZE = 1000
 SECRET_KEY = 'sqlite-database-browser-0.1.0'
 
 app = Flask(
@@ -530,7 +529,7 @@ def table_query(table):
         except Exception as exc:
             error = str(exc)
         else:
-            data = cursor.fetchall()[:app.config['MAX_RESULT_SIZE']]
+            data = cursor.fetchall()
             data_description = cursor.description
             row_count = cursor.rowcount
     else:
@@ -786,7 +785,7 @@ def where_clause(key, val, update_set=False):
         if update_set == False:
             string = str(key) + " IS NULL"
         else:
-            string = str(key) + " = \"""\""
+            string = str(key) + " = NULL"
     else:
         string = str(key) + " = \"" + str(val) + "\""
     

@@ -60,7 +60,11 @@
           {% for field in field_names %}
             {% set value = row[field] %}
             <td>
+              {% if value is none %}
+                <span class="vc">NULL</span>
+              {% else %}
                 {{ value|value_filter|safe }}
+              {% endif %}
             </td>
           {% endfor %}
         </tr>
