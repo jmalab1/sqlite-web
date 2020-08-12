@@ -15,12 +15,15 @@ import json
 import yaml
 import logging
 import ast
+import glob
+import subprocess
+import time
 from collections import namedtuple, OrderedDict
 from functools import wraps
 from getpass import getpass
 from io import TextIOWrapper
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(filename='python.log',level=logging.DEBUG)
 
 # Py2k compat.
 if sys.version_info[0] == 2:
@@ -81,8 +84,6 @@ from playhouse.migrate import migrate
 
 CUR_DIR = os.path.realpath(os.path.dirname(__file__))
 DEBUG = False
-MAX_RESULT_SIZE = 1000
-ROWS_PER_PAGE = 50
 SECRET_KEY = 'sqlite-database-browser-0.1.0'
 
 app = Flask(
@@ -227,6 +228,31 @@ def require_table(fn):
             abort(404)
         return fn(table, *args, **kwargs)
     return inner
+
+@app.route('/databases/')
+def database_view():
+    parser = get_option_parser()
+    options, args = parser.parse_args()
+    dir = args[1]
+
+    databases = []
+
+    for filename in glob.glob(dir + '**/*.db', recursive=True):
+        databases.append(filename)
+
+    return render_template(
+        'databases.html',
+        databases=databases)
+
+@app.route('/database/', methods=['GET','POST'])
+def open_db():
+    parser = get_option_parser()
+    options, args = parser.parse_args()
+
+    db = request.args.get('database')
+    initialize_app(db, options.read_only, None, options.url_prefix)
+
+    return redirect(url_for('index'))
 
 @app.route('/create-table/', methods=['POST'])
 def table_create():
@@ -432,36 +458,15 @@ def drop_trigger(table):
 @app.route('/<table>/content/')
 @require_table
 def table_content(table):
-    page_number = request.args.get('page') or ''
-    page_number = int(page_number) if page_number.isdigit() else 1
 
     dataset.update_cache(table)
     ds_table = dataset[table]
-    total_rows = ds_table.all().count()
-    rows_per_page = app.config['ROWS_PER_PAGE']
-    total_pages = int(math.ceil(total_rows / float(rows_per_page)))
-    # Restrict bounds.
-    page_number = min(page_number, total_pages)
-    page_number = max(page_number, 1)
-
-    previous_page = page_number - 1 if page_number > 1 else None
-    next_page = page_number + 1 if page_number < total_pages else None
-
-    query = ds_table.all().paginate(page_number, rows_per_page)
-
-    ordering = request.args.get('ordering')
-    if ordering:
-        field = ds_table.model_class._meta.columns[ordering.lstrip('-')]
-        if ordering.startswith('-'):
-            field = field.desc()
-        query = query.order_by(field)
 
     field_names = ds_table.columns
     columns = [f.column_name for f in ds_table.model_class._meta.sorted_fields]
 
-    table_sql = dataset.query(
-        'SELECT sql FROM sqlite_master WHERE tbl_name = ? AND type = ?',
-        [table, 'table']).fetchone()[0]
+    query = dataset.query('SELECT * FROM ' + table)
+    query = process_items(columns,query)
 
     delete = request.args.get('delete')
     if delete:
@@ -469,14 +474,9 @@ def table_content(table):
 
         deleteArray = []
         for key in deleteData:
-            if str(deleteData[key]) == 'None':
-                deleteArray.append(str(key) + " IS NULL\n")
-            elif str(deleteData[key]) == 'True' or str(deleteData[key]) == 'False':
-                deleteArray.append(str(key) + " = \"" + str(deleteData[key]).lower() + "\"\n")
-            else:
-                deleteArray.append(str(key) + " = \"" + str(deleteData[key]) + "\"\n")
+            deleteArray.append(where_clause(key, deleteData[key]))
 
-        deleteString = "AND ".join(deleteArray)
+        deleteString = "\nAND ".join(deleteArray)
 
         sql = 'DELETE FROM "%s" \nWHERE %s' % (table, deleteString)
 
@@ -488,28 +488,16 @@ def table_content(table):
         editArray = []
 
         for key in editData:
-            if str(editData[key]) == 'None':
-                editArray.append(str(key) + " IS NULL")
-            elif str(editData[key]) == 'True':
-                editArray.append(str(key) + " = \"1\"")
-            elif str(editData[key]) == 'False':
-                editArray.append(str(key) + " = \"0\"")
-            else:
-                editArray.append(str(key) + " = \"" + str(editData[key]) + "\"")
+            editArray.append(where_clause(key, editData[key], True))
 
         editString = ",\n".join(editArray)
 
         editArray_c = []
 
-        for keyc in editData:
-            if str(editData[keyc]) == 'None':
-                editArray_c.append(str(keyc) + " IS NULL\n")
-            elif str(editData[keyc]) == 'True' or str(editData[keyc]) == 'False':
-                editArray_c.append(str(keyc) + " = \"" + str(editData[keyc]).lower() + "\"\n")
-            else:
-                editArray_c.append(str(keyc) + " = \"" + str(editData[keyc]) + "\"\n")
+        for key_c in editData:
+            editArray_c.append(where_clause(key_c, editData[key_c]))
 
-        editString_c = "AND ".join(editArray_c)
+        editString_c = "\nAND ".join(editArray_c)
 
         sql = 'UPDATE "%s" \nSET %s \nWHERE %s' % (table, editString, editString_c)
 
@@ -520,14 +508,8 @@ def table_content(table):
         columns=columns,
         ds_table=ds_table,
         field_names=field_names,
-        next_page=next_page,
-        ordering=ordering,
-        page=page_number,
-        previous_page=previous_page,
         query=query,
-        table=table,
-        total_pages=total_pages,
-        total_rows=total_rows)
+        table=table)
 
 @app.route('/<table>/query/', methods=['GET', 'POST'])
 @require_table
@@ -547,7 +529,7 @@ def table_query(table):
         except Exception as exc:
             error = str(exc)
         else:
-            data = cursor.fetchall()[:app.config['MAX_RESULT_SIZE']]
+            data = cursor.fetchall()
             data_description = cursor.description
             row_count = cursor.rowcount
     else:
@@ -782,6 +764,32 @@ class PrefixMiddleware(object):
 #
 # Script options.
 #
+
+def process_items(columns, records):
+    data = []
+
+    for r in records:
+        count = 0
+        json = {}
+        for c in columns:
+            json.update({ columns[count] : r[count] })
+            count += 1
+        data.append(json)
+
+    return data
+
+def where_clause(key, val, update_set=False):
+    string = ""
+
+    if val == None:
+        if update_set == False:
+            string = str(key) + " IS NULL"
+        else:
+            string = str(key) + " = NULL"
+    else:
+        string = str(key) + " = \"" + str(val) + "\""
+    
+    return string
 
 def get_option_parser():
     parser = optparse.OptionParser()

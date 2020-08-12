@@ -11,8 +11,8 @@ else:
     long_description = ''
 
 setup(
-    name='sqlite-web',
-    version='0.3.7',
+    name='sqlite-web-jmalabanan',
+    version='0.0.3',
     description='Web-based SQLite database browser.',
     long_description='Web-based SQLite database browser.',
     author='Charles Leifer',

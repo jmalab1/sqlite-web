@@ -31,6 +31,17 @@
           console.log('preference logged, new value: ' + resp.show);
         });
       });
+
+      $('#table_query').DataTable({
+        "stateSave": true,
+        "columnDefs": [
+          { 
+            "orderable": false, 
+            "targets": 0
+          }
+        ],
+        "order": [[ 1, "asc" ]]
+      });
     });
   </script>
 {% endblock %}
@@ -49,7 +60,7 @@
   </div>
   <form action="." method="post" role="form">
     <div class="form-group{% if error %} has-error has-feedback{% endif %}">
-      <textarea class="form-control" name="sql" style="height: 400px;">{% if sql %}{{ sql }}{% endif %}</textarea>
+      <textarea class="form-control" name="sql" style="height: 200px;">{% if sql %}{{ sql }}{% endif %}</textarea>
       {% if error %}
         <span class="glyphicon glyphicon-remove form-control-feedback"></span>
         <span class="help-block">{{ error }}</span>
@@ -83,7 +94,7 @@
       <h3>
         Results ({{ data|length }})
       </h3>
-      <table class="table table-striped">
+      <table class="table table-striped" id="table_query">
         <thead>
           <tr>
             {% for col_desc in data_description %}
