@@ -12,7 +12,7 @@ else:
 
 setup(
     name='sqlite-web-jmalabanan',
-    version='0.0.2',
+    version='0.0.3',
     description='Web-based SQLite database browser.',
     long_description='Web-based SQLite database browser.',
     author='Charles Leifer',
