@@ -85,7 +85,6 @@ from playhouse.migrate import migrate
 CUR_DIR = os.path.realpath(os.path.dirname(__file__))
 DEBUG = False
 MAX_RESULT_SIZE = 1000
-ROWS_PER_PAGE = 50
 SECRET_KEY = 'sqlite-database-browser-0.1.0'
 
 app = Flask(
@@ -464,10 +463,11 @@ def table_content(table):
     dataset.update_cache(table)
     ds_table = dataset[table]
 
-    query = ds_table.all()
-
     field_names = ds_table.columns
     columns = [f.column_name for f in ds_table.model_class._meta.sorted_fields]
+
+    query = dataset.query('SELECT * FROM ' + table)
+    query = process_items(columns,query)
 
     delete = request.args.get('delete')
     if delete:
@@ -782,6 +782,19 @@ class PrefixMiddleware(object):
 #
 # Script options.
 #
+
+def process_items(columns, records):
+    data = []
+
+    for r in records:
+        count = 0
+        json = {}
+        for c in columns:
+            json.update({ columns[count] : r[count] })
+            count += 1
+        data.append(json)
+
+    return data
 
 def get_option_parser():
     parser = optparse.OptionParser()

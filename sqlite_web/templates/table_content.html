@@ -12,14 +12,16 @@
         truncated.toggle();
         full.toggle();
       });
-      $('#table_content').DataTable();
+      $('#table_content').DataTable({
+        "stateSave": true
+      });
     });
   </script>
 {% endblock %}
 
 {% block content_title %}
   {{ super() }}
-  <small>{{ ds_table.all().count() }} rows, showing page {{ page }}</small>
+  <small>{{ ds_table.all().count() }} rows</small>
 {% endblock %}
 
 {% block content_tab_class %} active{% endblock %}
@@ -51,11 +53,7 @@
           {% for field in field_names %}
             {% set value = row[field] %}
             <td>
-              {% if value is none %}
-                NULL
-              {% else %}
                 {{ value|value_filter|safe }}
-              {% endif %}
             </td>
           {% endfor %}
         </tr>
