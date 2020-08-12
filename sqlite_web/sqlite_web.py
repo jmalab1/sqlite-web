@@ -475,12 +475,7 @@ def table_content(table):
 
         deleteArray = []
         for key in deleteData:
-            if str(deleteData[key]) == 'None':
-                deleteArray.append(str(key) + " IS NULL\n")
-            elif str(deleteData[key]) == 'True' or str(deleteData[key]) == 'False':
-                deleteArray.append(str(key) + " = \"" + str(deleteData[key]).lower() + "\"\n")
-            else:
-                deleteArray.append(str(key) + " = \"" + str(deleteData[key]) + "\"\n")
+            deleteArray.append(str(key) + " = \"" + str(deleteData[key]) + "\"\n")
 
         deleteString = "AND ".join(deleteArray)
 
@@ -494,26 +489,14 @@ def table_content(table):
         editArray = []
 
         for key in editData:
-            if str(editData[key]) == 'None':
-                editArray.append(str(key) + " IS NULL")
-            elif str(editData[key]) == 'True':
-                editArray.append(str(key) + " = \"1\"")
-            elif str(editData[key]) == 'False':
-                editArray.append(str(key) + " = \"0\"")
-            else:
-                editArray.append(str(key) + " = \"" + str(editData[key]) + "\"")
+            editArray.append(str(key) + " = \"" + str(editData[key]) + "\"")
 
         editString = ",\n".join(editArray)
 
         editArray_c = []
 
         for keyc in editData:
-            if str(editData[keyc]) == 'None':
-                editArray_c.append(str(keyc) + " IS NULL\n")
-            elif str(editData[keyc]) == 'True' or str(editData[keyc]) == 'False':
-                editArray_c.append(str(keyc) + " = \"" + str(editData[keyc]).lower() + "\"\n")
-            else:
-                editArray_c.append(str(keyc) + " = \"" + str(editData[keyc]) + "\"\n")
+            editArray_c.append(str(keyc) + " = \"" + str(editData[keyc]) + "\"\n")
 
         editString_c = "AND ".join(editArray_c)
 
