@@ -475,9 +475,9 @@ def table_content(table):
 
         deleteArray = []
         for key in deleteData:
-            deleteArray.append(str(key) + " = \"" + str(deleteData[key]) + "\"\n")
+            deleteArray.append(where_clause(key, deleteData[key]))
 
-        deleteString = "AND ".join(deleteArray)
+        deleteString = "\nAND ".join(deleteArray)
 
         sql = 'DELETE FROM "%s" \nWHERE %s' % (table, deleteString)
 
@@ -489,16 +489,16 @@ def table_content(table):
         editArray = []
 
         for key in editData:
-            editArray.append(str(key) + " = \"" + str(editData[key]) + "\"")
+            editArray.append(where_clause(key, editData[key], True))
 
         editString = ",\n".join(editArray)
 
         editArray_c = []
 
-        for keyc in editData:
-            editArray_c.append(str(keyc) + " = \"" + str(editData[keyc]) + "\"\n")
+        for key_c in editData:
+            editArray_c.append(where_clause(key_c, editData[key_c]))
 
-        editString_c = "AND ".join(editArray_c)
+        editString_c = "\nAND ".join(editArray_c)
 
         sql = 'UPDATE "%s" \nSET %s \nWHERE %s' % (table, editString, editString_c)
 
@@ -778,6 +778,19 @@ def process_items(columns, records):
         data.append(json)
 
     return data
+
+def where_clause(key, val, update_set=False):
+    string = ""
+
+    if val == None:
+        if update_set == False:
+            string = str(key) + " IS NULL"
+        else:
+            string = str(key) + " = \"""\""
+    else:
+        string = str(key) + " = \"" + str(val) + "\""
+    
+    return string
 
 def get_option_parser():
     parser = optparse.OptionParser()
