@@ -527,7 +527,8 @@ def table_ajax(table):
 
     returnData = {
         "sEcho": data.get('draw'),
-        "iTotalRecords": len(query),
+        "iTotalRecords": ds_table.all().count(),
+        "iTotalDisplayRecords": ds_table.all().count(),
         "aaData": query
     }
 
