@@ -465,8 +465,8 @@ def table_content(table):
     field_names = ds_table.columns
     columns = [f.column_name for f in ds_table.model_class._meta.sorted_fields]
 
-    query = dataset.query('SELECT * FROM ' + table)
-    query = process_items(columns,query)
+    # query = dataset.query('SELECT * FROM ' + table)
+    # query = process_items(columns,query)
 
     delete = request.args.get('delete')
     if delete:
@@ -508,8 +508,30 @@ def table_content(table):
         columns=columns,
         ds_table=ds_table,
         field_names=field_names,
-        query=query,
         table=table)
+
+@app.route('/<table>/ajax_request', methods=['GET', 'POST'])
+def table_ajax(table):
+    data = request.form
+
+    dataset.update_cache(table)
+    ds_table = dataset[table]
+
+    columns = [f.column_name for f in ds_table.model_class._meta.sorted_fields]
+
+    PER_PAGE = data.get('length')
+    offset = data.get('start')
+
+    query = dataset.query("""SELECT * FROM %s LIMIT %s OFFSET %s""" % (table, PER_PAGE, offset))
+    query = process_items(columns,query)
+
+    returnData = {
+        "sEcho": data.get('draw'),
+        "iTotalRecords": len(query),
+        "aaData": query
+    }
+
+    return jsonify(returnData)
 
 @app.route('/<table>/query/', methods=['GET', 'POST'])
 @require_table
@@ -770,9 +792,9 @@ def process_items(columns, records):
 
     for r in records:
         count = 0
-        json = {}
+        json = [""]
         for c in columns:
-            json.update({ columns[count] : r[count] })
+            json.append( r[count] )
             count += 1
         data.append(json)
 

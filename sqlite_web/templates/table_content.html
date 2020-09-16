@@ -12,9 +12,19 @@
         truncated.toggle();
         full.toggle();
       });
-      $('#table_content').DataTable({
+
+      var table = $('#table_content').DataTable({
+        "serverSide": true,
+        "ajax": {
+            "url": '/' + $('#table-name').text() + '/ajax_request',
+            "type": 'POST',
+            "dataSrc": function ( data ) {
+              return data['aaData'];
+            }
+        },
+        "pageLength": 20,
+        "processing": true,
         "responsive": true,
-        "stateSave": true,
         "columnDefs": [
           {
             "orderable": false,
@@ -25,17 +35,17 @@
         "dom": 'Bfrtip',
         "buttons": [
           {
-            extend: 'excel',
-            title: $('#table-name').text(),
-            exportOptions: {
-              columns: ':visible:not(:eq(0))',
+            "extend": 'excel',
+            "title": $('#table-name').text(),
+            "exportOptions": {
+              "columns": ':visible:not(:eq(0))',
             }
           },
           {
-            extend: 'csv',
-            title: $('#table-name').text(),
-            exportOptions: {
-              columns: ':visible:not(:eq(0))'
+            "extend": 'csv',
+            "title": $('#table-name').text(),
+            "exportOptions": {
+              "columns": ':visible:not(:eq(0))'
             }
           }
         ]
@@ -65,28 +75,6 @@
       </tr>
     </thead>
     <tbody>
-      {% for row in query %}
-        <tr>
-          <td>
-            <a href="{{ url_for('table_content', table=table, delete=row ) }} ">
-              <i class="fa fa-trash-alt" aria-hidden="true"></i>
-            </a>
-            <a href="{{ url_for('table_content', table=table, edit=row ) }} ">
-              <i class="fa fa-edit" aria-hidden="true"></i>
-            </a>
-          </td>
-          {% for field in field_names %}
-            {% set value = row[field] %}
-            <td>
-              {% if value is none %}
-                <span class="vc">NULL</span>
-              {% else %}
-                {{ value|value_filter|safe }}
-              {% endif %}
-            </td>
-          {% endfor %}
-        </tr>
-      {% endfor %}
     </tbody>
   </table>
 {% endblock %}
