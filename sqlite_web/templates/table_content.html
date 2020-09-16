@@ -26,12 +26,14 @@
         "buttons": [
           {
             extend: 'excel',
+            title: $('#table-name').text(),
             exportOptions: {
-              columns: ':visible:not(:eq(0))'
+              columns: ':visible:not(:eq(0))',
             }
           },
           {
             extend: 'csv',
+            title: $('#table-name').text(),
             exportOptions: {
               columns: ':visible:not(:eq(0))'
             }
