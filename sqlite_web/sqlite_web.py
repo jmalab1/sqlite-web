@@ -522,14 +522,32 @@ def table_ajax(table):
     PER_PAGE = data.get('length')
     offset = data.get('start')
 
-    query = dataset.query("""SELECT * FROM %s LIMIT %s OFFSET %s""" % (table, PER_PAGE, offset))
-    query = process_items(columns,query)
+    search = data.get('search[value]')
+
+    additionalQuery = ""
+
+    if search:
+        searchCols = []
+        for x in columns:
+            searchCols.append(x + " LIKE '%" + search + "%' ")
+
+        searchCol = " OR ".join(searchCols)
+        additionalQuery = "WHERE (%s)" % (searchCol)
+
+    countQuery = """SELECT count(*) FROM %s %s""" % (table, additionalQuery)
+    actualQuery = """SELECT * FROM %s %s LIMIT %s OFFSET %s""" % (table, additionalQuery, PER_PAGE, offset)
+
+    total = dataset.query(countQuery)
+    query = dataset.query(actualQuery)
+
+    for t in total:
+        total = t[0]
 
     returnData = {
         "sEcho": data.get('draw'),
-        "iTotalRecords": ds_table.all().count(),
-        "iTotalDisplayRecords": ds_table.all().count(),
-        "aaData": query
+        "iTotalRecords": total,
+        "iTotalDisplayRecords": total,
+        "aaData": process_items(columns,query)
     }
 
     return jsonify(returnData)
