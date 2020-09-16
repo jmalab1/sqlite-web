@@ -21,7 +21,22 @@
             "targets": 0
           }
         ],
-        "order": [[ 1, "asc" ]]
+        "order": [[ 1, "asc" ]],
+        "dom": 'Bfrtip',
+        "buttons": [
+          {
+            extend: 'excel',
+            exportOptions: {
+              columns: ':visible:not(:eq(0))'
+            }
+          },
+          {
+            extend: 'csv',
+            exportOptions: {
+              columns: ':visible:not(:eq(0))'
+            }
+          }
+        ]
       });
     });
   </script>
