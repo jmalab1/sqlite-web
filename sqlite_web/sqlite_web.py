@@ -510,7 +510,7 @@ def table_content(table):
         field_names=field_names,
         table=table)
 
-@app.route('/<table>/ajax_request', methods=['GET', 'POST'])
+@app.route('/<table>/query', methods=['GET', 'POST'])
 def table_ajax(table):
     data = request.form
 
@@ -523,6 +523,8 @@ def table_ajax(table):
     offset = data.get('start')
 
     search = data.get('search[value]')
+    columnSortName = columns[int(data.get('order[0][column]')) - 1]
+    sortDir = data.get('order[0][dir]')
 
     additionalQuery = ""
 
@@ -532,7 +534,9 @@ def table_ajax(table):
             searchCols.append(x + " LIKE '%" + search + "%' ")
 
         searchCol = " OR ".join(searchCols)
-        additionalQuery = "WHERE (%s)" % (searchCol)
+        additionalQuery += "WHERE (%s) " % (searchCol)
+
+    additionalQuery += " ORDER BY %s %s" % (columnSortName, sortDir)
 
     countQuery = """SELECT count(*) FROM %s %s""" % (table, additionalQuery)
     actualQuery = """SELECT * FROM %s %s LIMIT %s OFFSET %s""" % (table, additionalQuery, PER_PAGE, offset)

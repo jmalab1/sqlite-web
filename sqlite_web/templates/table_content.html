@@ -16,7 +16,7 @@
       var table = $('#table_content').DataTable({
         "serverSide": true,
         "ajax": {
-            "url": '/' + $('#table-name').text() + '/ajax_request',
+            "url": '/' + $('#table-name').text() + '/query',
             "type": 'POST',
             "dataSrc": function ( data ) {
               return data['aaData'];
@@ -27,7 +27,7 @@
         "orderMulti": false,
         "pageLength": 20,
         "processing": true,
-        "responsive": true,
+        "fixedHeader": true,
         "columnDefs": [
           {
             "orderable": false,
@@ -53,6 +53,7 @@
           }
         ]
       });
+
     });
   </script>
 {% endblock %}
