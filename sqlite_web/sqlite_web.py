@@ -788,7 +788,7 @@ def where_clause(key, val, update_set=False):
             string = str(key) + " = NULL"
     else:
         string = str(key) + " = \"" + str(val) + "\""
-    
+
     return string
 
 def get_option_parser():

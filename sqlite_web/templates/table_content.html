@@ -13,10 +13,11 @@
         full.toggle();
       });
       $('#table_content').DataTable({
+        "responsive": true,
         "stateSave": true,
         "columnDefs": [
-          { 
-            "orderable": false, 
+          {
+            "orderable": false,
             "targets": 0
           }
         ],
@@ -51,10 +52,10 @@
         <tr>
           <td>
             <a href="{{ url_for('table_content', table=table, delete=row ) }} ">
-              <i class="fa fa-trash" aria-hidden="true"></i>
+              <i class="fa fa-trash-alt" aria-hidden="true"></i>
             </a>
             <a href="{{ url_for('table_content', table=table, edit=row ) }} ">
-              <i class="fa fa-pencil" aria-hidden="true"></i>
+              <i class="fa fa-edit" aria-hidden="true"></i>
             </a>
           </td>
           {% for field in field_names %}
