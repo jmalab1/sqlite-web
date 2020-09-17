@@ -23,9 +23,8 @@
             }
         },
         "pagingType": "full_numbers",
-        "lengthChange": false,
+        "stateSave": true,
         "orderMulti": false,
-        "pageLength": 20,
         "processing": true,
         "fixedHeader": true,
         "columnDefs": [
@@ -35,7 +34,7 @@
           }
         ],
         "order": [[ 1, "asc" ]],
-        "dom": 'Bfrtip',
+        "dom": 'lBfrtip',
         "buttons": [
           {
             "extend": 'excel',
@@ -53,6 +52,20 @@
           }
         ]
       });
+
+      oTable = $('#AttributesList-table').dataTable({
+        "aoColumnDefs": [{
+          "aTargets": [ '_all' ],
+          "mRender": function ( data, type, full ) {
+            if(data!=null){
+              return ''+data+'';
+            } else {
+              return '';
+            }
+          }
+        }
+        ]
+        });
 
     });
   </script>

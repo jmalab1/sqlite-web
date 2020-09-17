@@ -1,5 +1,5 @@
 div.page-header {
-  margin: 40px 0 20px;
+  margin: 15px 0 20px;
   padding-bottom: 9px;
   border-bottom: 1px solid #f8f5f0;
 }
@@ -9,4 +9,21 @@ body {font-size: 80%;}
 
 tbody>tr:hover {
   background-color: rgb(230, 230, 230) !important;
+}
+
+.sidebar-nav {
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  -webkit-appearance: none;
+  width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background-color: rgba(116, 116, 116, 0.5);
+  box-shadow: 0 0 1px rgba(255, 255, 255, .5);
 }
