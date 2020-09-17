@@ -3,18 +3,32 @@
 {% block extra_scripts %}
   <script type="text/javascript">
     $(function() {
-      var valueToggles = $('a.toggle-value');
-      valueToggles.on('click', function(e) {
-        e.preventDefault();
-        var elem = $(this),
-            truncated = elem.siblings('span.truncated'),
-            full = elem.siblings('span.full');
-        truncated.toggle();
-        full.toggle();
-      });
-      $('#table_content').DataTable({
-        "responsive": true,
+      var options = {
+        "serverSide": true,
+        "ajax": {
+            "url": '/' + $('#table-name').text() + '/query',
+            "type": 'POST',
+            "dataSrc": function ( data ) {
+              var old = JSON.stringify(data['aaData']).replace(/null/g, '"<span class=\'vc\'><i>NULL<i></span>"');
+              var newArray = JSON.parse(old);
+              return newArray;
+            },
+            "beforeSend": function () {
+              $("#overlay").show();
+              $(".loader").show();
+            },
+            "complete": function () {
+              $("#overlay").hide();
+              $(".loader").hide();
+              truncate(localStorage.getItem('truncate-text'));
+            }
+        },
+        "pagingType": "full_numbers",
+        "lengthMenu": [10, 25, 50, 100, 300, 500],
         "stateSave": true,
+        "orderMulti": false,
+        "fixedHeader": true,
+        "destroy": true,
         "columnDefs": [
           {
             "orderable": false,
@@ -22,25 +36,74 @@
           }
         ],
         "order": [[ 1, "asc" ]],
-        "dom": 'Bfrtip',
+        "dom": 'lBfrtip',
         "buttons": [
           {
-            extend: 'excel',
-            title: $('#table-name').text(),
-            exportOptions: {
-              columns: ':visible:not(:eq(0))',
+            "extend": 'excel',
+            "title": $('#table-name').text(),
+            "exportOptions": {
+              "columns": ':visible:not(:eq(0))',
             }
           },
           {
-            extend: 'csv',
-            title: $('#table-name').text(),
-            exportOptions: {
-              columns: ':visible:not(:eq(0))'
+            "extend": 'csv',
+            "title": $('#table-name').text(),
+            "exportOptions": {
+              "columns": ':visible:not(:eq(0))'
             }
           }
         ]
+      }
+
+      if (localStorage.getItem('responsive-table-text') == "on") {
+        $('#responsive-checkbox').prop("checked", true);
+        options.responsive = true;
+      } else {
+        $('#responsive-checkbox').prop("checked", false);
+        options.responsive = false;
+      }
+
+      var oTable = $('#table_content').DataTable(options);
+
+      truncate(localStorage.getItem('truncate-text'));
+
+      $('#truncate-checkbox').change(function() {
+        var toggle = "off";
+        if(this.checked) {
+          toggle = "on";
+        }
+        truncate(toggle);
+      });
+
+      $('#responsive-checkbox').change(function() {
+        var toggle = "off";
+        if(this.checked) {
+          toggle = "on";
+        }
+        responsiveTable(toggle);
       });
     });
+
+    function truncate(toggle) {
+      if (toggle == "off") {
+        localStorage.setItem('truncate-text', 'off');
+        $('#truncate-checkbox').prop("checked", false);
+        $('tbody td').removeClass("truncate");
+      } else  {
+        localStorage.setItem('truncate-text', 'on');
+        $('#truncate-checkbox').prop("checked", true);
+        $('tbody td').addClass("truncate");
+      }
+    }
+
+    function responsiveTable(toggle) {
+      if (toggle == "off") {
+        localStorage.setItem('responsive-table-text', 'off');
+      } else  {
+        localStorage.setItem('responsive-table-text', 'on');
+      }
+      window.location.reload();
+    }
   </script>
 {% endblock %}
 
@@ -53,6 +116,14 @@
 
 {% block inner_content %}
   {# add filters #}
+  <div class="form-check">
+    <input type="checkbox" class="form-check-input" id="responsive-checkbox">
+    <label class="form-check-label" for="responsive-checkbox">Responsive Table</label>
+  </div>
+  <div class="form-check">
+    <input type="checkbox" class="form-check-input" id="truncate-checkbox">
+    <label class="form-check-label" for="truncate-checkbox">Truncate Text</label>
+  </div><br/>
   <table class="table table-striped" id="table_content">
     <thead>
       <tr>
@@ -65,28 +136,6 @@
       </tr>
     </thead>
     <tbody>
-      {% for row in query %}
-        <tr>
-          <td>
-            <a href="{{ url_for('table_content', table=table, delete=row ) }} ">
-              <i class="fa fa-trash-alt" aria-hidden="true"></i>
-            </a>
-            <a href="{{ url_for('table_content', table=table, edit=row ) }} ">
-              <i class="fa fa-edit" aria-hidden="true"></i>
-            </a>
-          </td>
-          {% for field in field_names %}
-            {% set value = row[field] %}
-            <td>
-              {% if value is none %}
-                <span class="vc">NULL</span>
-              {% else %}
-                {{ value|value_filter|safe }}
-              {% endif %}
-            </td>
-          {% endfor %}
-        </tr>
-      {% endfor %}
     </tbody>
   </table>
 {% endblock %}
