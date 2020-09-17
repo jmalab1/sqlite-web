@@ -46,8 +46,9 @@
     </script>
     {% block extra_scripts %}{% endblock %}
   </head>
-
   <body class="{% block body_class %}{% endblock %}">
+    <div id="overlay"></div>
+    <div class="loader">Loading...</div>
     <div class="container-fluid">
       <br/>
       <a href="{{ url_for('database_view') }}" class="btn btn-primary btn-sm" role="button">Databases</a>

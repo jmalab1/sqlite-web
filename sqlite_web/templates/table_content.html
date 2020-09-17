@@ -20,12 +20,19 @@
             "type": 'POST',
             "dataSrc": function ( data ) {
               return data['aaData'];
+            },
+            "beforeSend": function () {
+              $("#overlay").show();
+              $(".loader").show();
+            },
+            "complete": function () {
+              $("#overlay").hide();
+              $(".loader").hide();
             }
         },
         "pagingType": "full_numbers",
         "stateSave": true,
         "orderMulti": false,
-        "processing": true,
         "fixedHeader": true,
         "columnDefs": [
           {
@@ -50,23 +57,8 @@
               "columns": ':visible:not(:eq(0))'
             }
           }
-        ]
+        ],
       });
-
-      oTable = $('#AttributesList-table').dataTable({
-        "aoColumnDefs": [{
-          "aTargets": [ '_all' ],
-          "mRender": function ( data, type, full ) {
-            if(data!=null){
-              return ''+data+'';
-            } else {
-              return '';
-            }
-          }
-        }
-        ]
-        });
-
     });
   </script>
 {% endblock %}
