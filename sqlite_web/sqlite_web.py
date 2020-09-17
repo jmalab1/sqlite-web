@@ -543,7 +543,7 @@ def table_query(table):
         if request.args.get('sql'):
             sql = request.args.get('sql')
         else:
-            sql = 'SELECT *\nFROM "%s"' % (table)
+            sql = 'SELECT *\nFROM "%s" \nLIMIT 1000' % (table)
 
     table_sql = dataset.query(
         'SELECT sql FROM sqlite_master WHERE tbl_name = ? AND type = ?',
