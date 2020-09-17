@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dataTables.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.bootstrap.min.css') }}">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.6.3/css/buttons.dataTables.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedheader/3.1.7/css/fixedHeader.dataTables.min.css">
 
     {% block extra_head %}{% endblock %}
     <script src="{{ url_for('static', filename='js/jquery-1.11.0.min.js') }}" type="text/javascript"></script>
@@ -26,6 +27,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.6.3/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/1.6.3/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/fixedheader/3.1.7/js/dataTables.fixedHeader.min.js"></script>
     <script type="text/javascript">
       $(function() {
         $('a#toggle-helper-tables').on('click', function(e) {
@@ -44,8 +46,9 @@
     </script>
     {% block extra_scripts %}{% endblock %}
   </head>
-
   <body class="{% block body_class %}{% endblock %}">
+    <div id="overlay"></div>
+    <div class="loader">Loading...</div>
     <div class="container-fluid">
       <br/>
       <a href="{{ url_for('database_view') }}" class="btn btn-primary btn-sm" role="button">Databases</a>
@@ -60,7 +63,7 @@
             </form>
             {% endif %}
           {% endblock %}
-          <h4 id="table-name">{% block content_title %}{% endblock %}</h4>
+          <h4>{% block content_title %}{% endblock %}</h4>
         </div>
       {% endblock %}
       <div class="row">

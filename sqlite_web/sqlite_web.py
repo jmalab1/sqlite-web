@@ -465,51 +465,58 @@ def table_content(table):
     field_names = ds_table.columns
     columns = [f.column_name for f in ds_table.model_class._meta.sorted_fields]
 
-    query = dataset.query('SELECT * FROM ' + table)
-    query = process_items(columns,query)
-
-    delete = request.args.get('delete')
-    if delete:
-        deleteData = ast.literal_eval(delete)
-
-        deleteArray = []
-        for key in deleteData:
-            deleteArray.append(where_clause(key, deleteData[key]))
-
-        deleteString = "\nAND ".join(deleteArray)
-
-        sql = 'DELETE FROM "%s" \nWHERE %s' % (table, deleteString)
-
-        return redirect(url_for('table_query', table=table, sql=sql))
-
-    edit = request.args.get('edit')
-    if edit:
-        editData = ast.literal_eval(edit)
-        editArray = []
-
-        for key in editData:
-            editArray.append(where_clause(key, editData[key], True))
-
-        editString = ",\n".join(editArray)
-
-        editArray_c = []
-
-        for key_c in editData:
-            editArray_c.append(where_clause(key_c, editData[key_c]))
-
-        editString_c = "\nAND ".join(editArray_c)
-
-        sql = 'UPDATE "%s" \nSET %s \nWHERE %s' % (table, editString, editString_c)
-
-        return redirect(url_for('table_query', table=table, sql=sql))
-
     return render_template(
         'table_content.html',
         columns=columns,
         ds_table=ds_table,
         field_names=field_names,
-        query=query,
         table=table)
+
+@app.route('/<table>/query', methods=['GET', 'POST'])
+def table_ajax(table):
+    data = request.form
+
+    dataset.update_cache(table)
+    ds_table = dataset[table]
+
+    columns = [f.column_name for f in ds_table.model_class._meta.sorted_fields]
+
+    PER_PAGE = data.get('length')
+    offset = data.get('start')
+
+    search = data.get('search[value]')
+    columnSortName = columns[int(data.get('order[0][column]')) - 1]
+    sortDir = data.get('order[0][dir]')
+
+    additionalQuery = ""
+
+    if search:
+        searchCols = []
+        for x in columns:
+            searchCols.append(x + " LIKE '%" + search + "%' ")
+
+        searchCol = " OR ".join(searchCols)
+        additionalQuery += "WHERE (%s) " % (searchCol)
+
+    additionalQuery += " ORDER BY %s %s" % (columnSortName, sortDir)
+
+    countQuery = """SELECT count(*) FROM %s %s""" % (table, additionalQuery)
+    actualQuery = """SELECT * FROM %s %s LIMIT %s OFFSET %s""" % (table, additionalQuery, PER_PAGE, offset)
+
+    total = dataset.query(countQuery)
+    query = dataset.query(actualQuery)
+
+    for t in total:
+        total = t[0]
+
+    returnData = {
+        "sEcho": data.get('draw'),
+        "iTotalRecords": total,
+        "iTotalDisplayRecords": total,
+        "aaData": process_items(columns,query)
+    }
+
+    return jsonify(returnData)
 
 @app.route('/<table>/query/', methods=['GET', 'POST'])
 @require_table
@@ -536,7 +543,7 @@ def table_query(table):
         if request.args.get('sql'):
             sql = request.args.get('sql')
         else:
-            sql = 'SELECT *\nFROM "%s"' % (table)
+            sql = 'SELECT *\nFROM "%s" \nLIMIT 1000' % (table)
 
     table_sql = dataset.query(
         'SELECT sql FROM sqlite_master WHERE tbl_name = ? AND type = ?',
@@ -770,9 +777,9 @@ def process_items(columns, records):
 
     for r in records:
         count = 0
-        json = {}
+        json = [""]
         for c in columns:
-            json.update({ columns[count] : r[count] })
+            json.append( r[count] )
             count += 1
         data.append(json)
 
