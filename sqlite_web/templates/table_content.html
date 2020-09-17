@@ -3,9 +3,7 @@
 {% block extra_scripts %}
   <script type="text/javascript">
     $(function() {
-      truncate();
-
-      var table = $('#table_content').DataTable({
+      var options = {
         "serverSide": true,
         "ajax": {
             "url": '/' + $('#table-name').text() + '/query',
@@ -22,7 +20,7 @@
             "complete": function () {
               $("#overlay").hide();
               $(".loader").hide();
-              truncate();
+              truncate(localStorage.getItem('truncate-text'));
             }
         },
         "pagingType": "full_numbers",
@@ -30,6 +28,7 @@
         "stateSave": true,
         "orderMulti": false,
         "fixedHeader": true,
+        "destroy": true,
         "columnDefs": [
           {
             "orderable": false,
@@ -53,32 +52,57 @@
               "columns": ':visible:not(:eq(0))'
             }
           }
-        ],
+        ]
+      }
+
+      if (localStorage.getItem('responsive-table-text') == "on") {
+        $('#responsive-checkbox').prop("checked", true);
+        options.responsive = true;
+      } else {
+        $('#responsive-checkbox').prop("checked", false);
+        options.responsive = false;
+      }
+
+      var oTable = $('#table_content').DataTable(options);
+
+      truncate(localStorage.getItem('truncate-text'));
+
+      $('#truncate-checkbox').change(function() {
+        var toggle = "off";
+        if(this.checked) {
+          toggle = "on";
+        }
+        truncate(toggle);
       });
 
-      $('a#truncate-button').click(function() {
-        if (localStorage.getItem('truncate-text') == undefined) {
-          localStorage.setItem('truncate-text', 'on');
-        } else if (localStorage.getItem('truncate-text') == "on") {
-          localStorage.setItem('truncate-text', 'off');
-        } else if (localStorage.getItem('truncate-text') == "off") {
-          localStorage.setItem('truncate-text', 'on');
+      $('#responsive-checkbox').change(function() {
+        var toggle = "off";
+        if(this.checked) {
+          toggle = "on";
         }
-        truncate();
+        responsiveTable(toggle);
       });
     });
 
-    function truncate() {
-        if (localStorage.getItem('truncate-text') == undefined) {
-          $('td').addClass("truncate");
-          $('a#truncate-button').text("←T→");
-        } else if (localStorage.getItem('truncate-text') == "on") {
-          $('td').addClass("truncate");
-          $('a#truncate-button').text("←T→");
-        } else if (localStorage.getItem('truncate-text') == "off") {
-          $('td').removeClass("truncate");
-          $('a#truncate-button').text("→T←");
-        }
+    function truncate(toggle) {
+      if (toggle == "off") {
+        localStorage.setItem('truncate-text', 'off');
+        $('#truncate-checkbox').prop("checked", false);
+        $('tbody td').removeClass("truncate");
+      } else  {
+        localStorage.setItem('truncate-text', 'on');
+        $('#truncate-checkbox').prop("checked", true);
+        $('tbody td').addClass("truncate");
+      }
+    }
+
+    function responsiveTable(toggle) {
+      if (toggle == "off") {
+        localStorage.setItem('responsive-table-text', 'off');
+      } else  {
+        localStorage.setItem('responsive-table-text', 'on');
+      }
+      window.location.reload();
     }
   </script>
 {% endblock %}
@@ -92,7 +116,14 @@
 
 {% block inner_content %}
   {# add filters #}
-  <a href="#" class="btn btn-info btn-sm" id="truncate-button" role="button">T</a>
+  <div class="form-check">
+    <input type="checkbox" class="form-check-input" id="responsive-checkbox">
+    <label class="form-check-label" for="responsive-checkbox">Responsive Table</label>
+  </div><br/>
+  <div class="form-check">
+    <input type="checkbox" class="form-check-input" id="truncate-checkbox">
+    <label class="form-check-label" for="truncate-checkbox">Truncate Text</label>
+  </div><br/>
   <table class="table table-striped" id="table_content">
     <thead>
       <tr>
