@@ -3,15 +3,7 @@
 {% block extra_scripts %}
   <script type="text/javascript">
     $(function() {
-      var valueToggles = $('a.toggle-value');
-      valueToggles.on('click', function(e) {
-        e.preventDefault();
-        var elem = $(this),
-            truncated = elem.siblings('span.truncated'),
-            full = elem.siblings('span.full');
-        truncated.toggle();
-        full.toggle();
-      });
+      truncate();
 
       var table = $('#table_content').DataTable({
         "serverSide": true,
@@ -19,7 +11,9 @@
             "url": '/' + $('#table-name').text() + '/query',
             "type": 'POST',
             "dataSrc": function ( data ) {
-              return data['aaData'];
+              var old = JSON.stringify(data['aaData']).replace(/null/g, '"<span class=\'vc\'><i>NULL<i></span>"');
+              var newArray = JSON.parse(old);
+              return newArray;
             },
             "beforeSend": function () {
               $("#overlay").show();
@@ -28,6 +22,7 @@
             "complete": function () {
               $("#overlay").hide();
               $(".loader").hide();
+              truncate();
             }
         },
         "pagingType": "full_numbers",
@@ -60,7 +55,31 @@
           }
         ],
       });
+
+      $('a#truncate-button').click(function() {
+        if (localStorage.getItem('truncate-text') == undefined) {
+          localStorage.setItem('truncate-text', 'on');
+        } else if (localStorage.getItem('truncate-text') == "on") {
+          localStorage.setItem('truncate-text', 'off');
+        } else if (localStorage.getItem('truncate-text') == "off") {
+          localStorage.setItem('truncate-text', 'on');
+        }
+        truncate();
+      });
     });
+
+    function truncate() {
+        if (localStorage.getItem('truncate-text') == undefined) {
+          $('td').addClass("truncate");
+          $('a#truncate-button').text("←T→");
+        } else if (localStorage.getItem('truncate-text') == "on") {
+          $('td').addClass("truncate");
+          $('a#truncate-button').text("←T→");
+        } else if (localStorage.getItem('truncate-text') == "off") {
+          $('td').removeClass("truncate");
+          $('a#truncate-button').text("→T←");
+        }
+    }
   </script>
 {% endblock %}
 
@@ -73,6 +92,7 @@
 
 {% block inner_content %}
   {# add filters #}
+  <a href="#" class="btn btn-info btn-sm" id="truncate-button" role="button">T</a>
   <table class="table table-striped" id="table_content">
     <thead>
       <tr>

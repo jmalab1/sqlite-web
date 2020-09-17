@@ -465,44 +465,6 @@ def table_content(table):
     field_names = ds_table.columns
     columns = [f.column_name for f in ds_table.model_class._meta.sorted_fields]
 
-    # query = dataset.query('SELECT * FROM ' + table)
-    # query = process_items(columns,query)
-
-    delete = request.args.get('delete')
-    if delete:
-        deleteData = ast.literal_eval(delete)
-
-        deleteArray = []
-        for key in deleteData:
-            deleteArray.append(where_clause(key, deleteData[key]))
-
-        deleteString = "\nAND ".join(deleteArray)
-
-        sql = 'DELETE FROM "%s" \nWHERE %s' % (table, deleteString)
-
-        return redirect(url_for('table_query', table=table, sql=sql))
-
-    edit = request.args.get('edit')
-    if edit:
-        editData = ast.literal_eval(edit)
-        editArray = []
-
-        for key in editData:
-            editArray.append(where_clause(key, editData[key], True))
-
-        editString = ",\n".join(editArray)
-
-        editArray_c = []
-
-        for key_c in editData:
-            editArray_c.append(where_clause(key_c, editData[key_c]))
-
-        editString_c = "\nAND ".join(editArray_c)
-
-        sql = 'UPDATE "%s" \nSET %s \nWHERE %s' % (table, editString, editString_c)
-
-        return redirect(url_for('table_query', table=table, sql=sql))
-
     return render_template(
         'table_content.html',
         columns=columns,
