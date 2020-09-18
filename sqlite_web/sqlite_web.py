@@ -465,7 +465,8 @@ def table_content(table):
     ds_table = dataset[table]
 
     field_names = ds_table.columns
-    columns = [f.column_name for f in ds_table.model_class._meta.sorted_fields]
+    columnsQuery = dataset.query("PRAGMA table_info(%s)" % (table))
+    columns = [f[1] for f in columnsQuery]
 
     return render_template(
         'table_content.html',
@@ -481,7 +482,8 @@ def table_ajax(table):
     dataset.update_cache(table)
     ds_table = dataset[table]
 
-    columns = [f.column_name for f in ds_table.model_class._meta.sorted_fields]
+    columnsQuery = dataset.query("PRAGMA table_info(%s)" % (table))
+    columns = [f[1] for f in columnsQuery]
 
     PER_PAGE = data.get('length')
     offset = data.get('start')
@@ -786,17 +788,17 @@ def isSQLite3(filename):
     return Header[0:16] == b'SQLite format 3\000'
 
 def process_items(columns, records):
-    data = []
+    all = []
 
     for r in records:
         count = 0
-        json = [""]
+        one = [""]
         for c in columns:
-            json.append( r[count] )
+            one.append( r[count] )
             count += 1
-        data.append(json)
+        all.append(one)
 
-    return data
+    return all
 
 def where_clause(key, val, update_set=False):
     string = ""
