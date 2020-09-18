@@ -26,7 +26,6 @@ setup(
         'peewee>=3.0.0',
         'pygments',
         'pyopenssl',
-        'pyexcel',
     ],
     include_package_data=True,
     packages=find_packages(),

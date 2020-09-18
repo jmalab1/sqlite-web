@@ -20,10 +20,14 @@
         <br/>
         <a href="{{ url_for('index') }}" class="btn btn-primary btn-sm" role="button">Cancel</a><br/><br/>
         <h5>Databases</h5>
-        <p>Choose a database to switch to.</p>
-        {% for database in databases %}
+        {% if not databases %}
+          <p>No databases found</p>
+        {% else %}
+          <p>Choose a database to switch to.</p>
+          {% for database in databases %}
             <a href="{{ url_for('open_db', database=database) }}">{{ database }}</a><br>
-         {% endfor %}
+          {% endfor %}
+        {% endif %}
     </div>
   </body>
 </html>

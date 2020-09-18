@@ -236,17 +236,19 @@ def require_table(fn):
 def database_view():
     parser = get_option_parser()
     options, args = parser.parse_args()
-    dir = args[1]
-
     databases = []
 
-    for filename in glob.glob(dir + '**/*.db', recursive=True):
-        if isSQLite3(filename):
-            databases.append(filename)
+    if len(args) < 2:
+        return render_template('databases.html', databases=databases)
 
-    return render_template(
-        'databases.html',
-        databases=databases)
+    databases_path = args[1].rstrip('/')
+
+    if databases_path is not None:
+        for filename in glob.glob(databases_path + '/**/*.db', recursive=True):
+            if isSQLite3(filename):
+                databases.append(filename)
+
+    return render_template('databases.html', databases=databases)
 
 @app.route('/database/', methods=['GET','POST'])
 def open_db():
