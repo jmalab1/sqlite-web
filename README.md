@@ -7,17 +7,18 @@ Project dependencies:
 * [flask](http://flask.pocoo.org)
 * [peewee](http://docs.peewee-orm.com)
 * [pygments](http://pygments.org)
+* [pyopenssl](https://www.pyopenssl.org)
 
 ### Installation
 
 ```sh
-$ pip install sqlite-web
+$ pip3 install sqlite-web-jmalabanan
 ```
 
 ### Usage
 
 ```sh
-$ sqlite_web /path/to/database.db
+$ sqlite_web /path/to/database.db /parent/path/to/databases
 ```
 
 ### Features
@@ -32,6 +33,8 @@ $ sqlite_web /path/to/database.db
 * Export data as JSON or CSV.
 * Import JSON or CSV files.
 * Browse table data.
+* Search directories for database files
+* Database switching
 
 ### Screenshots
 
@@ -61,13 +64,13 @@ The syntax for invoking sqlite-web is:
 
 ```console
 
-$ sqlite_web [options] /path/to/database-file.db
+$ sqlite_web [options] /path/to/database-file.db /parent/path/to/databases
 ```
 
 The following options are available:
 
 * ``-p``, ``--port``: default is 8080
-* ``-H``, ``--host``: default is 127.0.0.1
+* ``-H``, ``--host``: default is localhost
 * ``-d``, ``--debug``: default is false
 * ``-x``, ``--no-browser``: do not open a web-browser when sqlite-web starts.
 * ``-P``, ``--password``: prompt for password to access sqlite-web.
@@ -76,18 +79,3 @@ The following options are available:
   password, but will use the value from the environment.
 * ``-r``, ``--read-only``: open database in read-only mode.
 * ``-u``, ``--url-prefix``: URL prefix for application, e.g. "/sqlite-web".
-
-### Using docker
-
-A Dockerfile is provided with sqlite-web. To use:
-
-```console
-
-$ cd docker/  # Change dirs to the dir containing Dockerfile
-$ docker build -t coleifer/sqlite-web .
-$ docker run -it --rm \
-    -p 8080:8080 \
-    -v /path/to/your-data:/data \
-    -e SQLITE_DATABASE=db_filename.db \
-    coleifer/sqlite-web
-```
