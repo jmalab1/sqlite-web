@@ -21,7 +21,7 @@
         <a href="{{ url_for('index') }}" class="btn btn-primary btn-sm" role="button">Cancel</a><br/><br/>
         <h5>Databases</h5>
         {% if not databases %}
-          <p>No databases found</p>
+          <p>No other databases found</p>
         {% else %}
           <p>Choose a database to switch to.</p>
           {% for database in databases %}
