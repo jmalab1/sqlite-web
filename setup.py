@@ -20,10 +20,13 @@ setup(
     url='https://github.com/jmalab1/sqlite-web',
     license='MIT',
     install_requires=[
+        'pyyaml',
+        'argh',
         'flask',
         'peewee>=3.0.0',
         'pygments',
         'pyopenssl',
+        'pyexcel',
     ],
     include_package_data=True,
     packages=find_packages(),

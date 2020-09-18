@@ -18,6 +18,8 @@ import ast
 import glob
 import subprocess
 import time
+import io
+import csv
 from collections import namedtuple, OrderedDict
 from functools import wraps
 from getpass import getpass
@@ -517,7 +519,7 @@ def table_ajax(table):
         "sEcho": data.get('draw'),
         "iTotalRecords": total,
         "iTotalDisplayRecords": total,
-        "aaData": process_items(columns,query)
+        "aaData": process_items_html(columns,query)
     }
 
     return jsonify(returnData)
@@ -575,26 +577,34 @@ def set_table_definition_preference():
     return jsonify({key: show})
 
 def export(table, sql, export_format):
-    model_class = dataset[table].model_class
-    query = model_class.raw(sql).dicts()
-    buf = StringIO()
+
+    columnsQuery = dataset.query("PRAGMA table_info(%s)" % (table))
+    columns = [f[1] for f in columnsQuery]
+
+    columnsQuery = dataset.query("PRAGMA table_info(%s)" % (table))
+    columns = [f[1] for f in columnsQuery]
+
+    query = dataset.query(sql)
+
     if export_format == 'json':
-        kwargs = {'indent': 2}
         filename = '%s-export.json' % table
         mimetype = 'text/javascript'
+        queryData = process_items_dict(columns, query)
+        response_data = json.dumps(queryData)
+        response = make_response(response_data)
     else:
-        kwargs = {}
         filename = '%s-export.csv' % table
         mimetype = 'text/csv'
+        queryData = process_items_list(columns, query)
+        si = io.StringIO()
+        cw = csv.writer(si)
+        cw.writerows(queryData)
+        response_data = si.getvalue()
+        response = make_response(si.getvalue())
 
-    dataset.freeze(query, export_format, file_obj=buf, **kwargs)
-
-    response_data = buf.getvalue()
-    response = make_response(response_data)
     response.headers['Content-Length'] = len(response_data)
     response.headers['Content-Type'] = mimetype
-    response.headers['Content-Disposition'] = 'attachment; filename=%s' % (
-        filename)
+    response.headers['Content-Disposition'] = 'attachment; filename=%s' % (filename)
     response.headers['Expires'] = 0
     response.headers['Pragma'] = 'public'
     return response
@@ -787,12 +797,40 @@ def isSQLite3(filename):
 
     return Header[0:16] == b'SQLite format 3\000'
 
-def process_items(columns, records):
+def process_items_html(columns, records):
     all = []
 
     for r in records:
         count = 0
         one = [""]
+        for c in columns:
+            one.append( r[count] )
+            count += 1
+        all.append(one)
+
+    return all
+
+def process_items_dict(columns, records):
+    all = {}
+
+    count1 = 0
+    for r in records:
+        count2 = 0
+        one = {}
+        for c in columns:
+            one[c] = r[count2]
+            count2 += 1
+        all[count1] = one
+        count1 += 1
+
+    return all
+
+def process_items_list(columns, records):
+    all = [columns]
+
+    for r in records:
+        count = 0
+        one = []
         for c in columns:
             one.append( r[count] )
             count += 1
