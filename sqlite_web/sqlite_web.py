@@ -22,6 +22,7 @@ from collections import namedtuple, OrderedDict
 from functools import wraps
 from getpass import getpass
 from io import TextIOWrapper
+from os.path import isfile, getsize
 
 logging.basicConfig(filename='python.log',level=logging.DEBUG)
 
@@ -238,7 +239,8 @@ def database_view():
     databases = []
 
     for filename in glob.glob(dir + '**/*.db', recursive=True):
-        databases.append(filename)
+        if isSQLite3(filename):
+            databases.append(filename)
 
     return render_template(
         'databases.html',
@@ -771,6 +773,17 @@ class PrefixMiddleware(object):
 #
 # Script options.
 #
+
+def isSQLite3(filename):
+    if not isfile(filename):
+        return False
+    if getsize(filename) < 100: # SQLite database file header is 100 bytes
+        return False
+
+    with open(filename, 'rb') as fd:
+        Header = fd.read(100)
+
+    return Header[0:16] == b'SQLite format 3\000'
 
 def process_items(columns, records):
     data = []
