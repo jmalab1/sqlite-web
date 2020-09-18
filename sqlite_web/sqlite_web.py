@@ -822,8 +822,8 @@ def get_option_parser():
     parser.add_option(
         '-H',
         '--host',
-        default='127.0.0.1',
-        help='Host for web interface, default=127.0.0.1')
+        default='localhost',
+        help='Host for web interface, default=localhost')
     parser.add_option(
         '-d',
         '--debug',
@@ -861,7 +861,7 @@ def die(msg, exit_code=1):
     sys.exit(exit_code)
 
 def open_browser_tab(host, port):
-    url = 'http://%s:%s/' % (host, port)
+    url = 'https://%s:%s/' % (host, port)
 
     def _open_tab(url):
         time.sleep(1.5)
@@ -941,8 +941,7 @@ def main():
         key = b'sqlite-web-' + args[0].encode('utf8') + password.encode('utf8')
         app.secret_key = hashlib.sha256(key).hexdigest()
 
-    app.run(host=options.host, port=options.port, debug=options.debug)
-
+    app.run(host=options.host, port=options.port, debug=options.debug, ssl_context='adhoc')
 
 if __name__ == '__main__':
     main()

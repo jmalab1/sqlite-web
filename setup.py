@@ -12,7 +12,7 @@ else:
 
 setup(
     name='sqlite-web-jmalabanan',
-    version='0.0.5',
+    version='0.0.9',
     description='Web-based SQLite database browser.',
     long_description='Web-based SQLite database browser.',
     author='Charles Leifer',
@@ -23,6 +23,7 @@ setup(
         'flask',
         'peewee>=3.0.0',
         'pygments',
+        'pyopenssl',
     ],
     include_package_data=True,
     packages=find_packages(),
