@@ -88,7 +88,7 @@
     {% if not data %}
       <p>Empty result set.</p>
     {% else %}
-      <a class="float-right" href="{{ url_for('table_query', table=table, sql=sql) }}">Permalink</a>
+      <a class="float-right" href="{{ url_for('table_query', table=table, sql=sql, database=dataset.filename) }}">Permalink</a>
       <h3>
         Results ({{ data|length }})
       </h3>

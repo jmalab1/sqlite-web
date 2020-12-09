@@ -7,20 +7,20 @@
 {% block content %}
   <ul class="nav nav-tabs">
     <li class="nav-item">
-      <a class="nav-link{% block content_tab_class %}{% endblock %}" href="{{ url_for('table_content', table=table) }}">Content</a>
+      <a class="nav-link{% block content_tab_class %}{% endblock %}" href="{{ url_for('table_content', table=table, database=dataset.filename) }}">Content</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link{% block structure_tab_class %}{% endblock %}" href="{{ url_for('table_structure', table=table) }}">Structure</a>
+      <a class="nav-link{% block structure_tab_class %}{% endblock %}" href="{{ url_for('table_structure', table=table, database=dataset.filename) }}">Structure</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link{% block query_tab_class %}{% endblock %}" href="{{ url_for('table_query', table=table) }}">Query</a>
+      <a class="nav-link{% block query_tab_class %}{% endblock %}" href="{{ url_for('table_query', table=table, database=dataset.filename) }}">Query</a>
     </li>
     {% if not dataset.is_readonly %}
     <li class="nav-item ml-auto">
-      <a class="nav-link{% block drop_tab_class %}{% endblock %}" href="{{ url_for('drop_table', table=table) }}">Drop</a>
+      <a class="nav-link{% block drop_tab_class %}{% endblock %}" href="{{ url_for('drop_table', table=table, database=dataset.filename) }}">Drop</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link{% block import_tab_class %}{% endblock %}" href="{{ url_for('table_import', table=table) }}">Import</a>
+      <a class="nav-link{% block import_tab_class %}{% endblock %}" href="{{ url_for('table_import', table=table, database=dataset.filename) }}">Import</a>
     </li>
     {% endif %}
     {% block inner_nav %}{% endblock %}

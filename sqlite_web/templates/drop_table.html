@@ -4,13 +4,13 @@
 
 {% block inner_content %}
 <h3>Drop table</h3>
-<form action="{{ url_for('drop_table', table=table) }}" class="form" method="post">
+<form action="{{ url_for('drop_table', table=table, database=dataset.filename) }}" class="form" method="post">
   <p>
     Are you sure you want to drop <strong>{{ table }}</strong> and all
     associated data?
   </p>
   <p><strong>This action cannot be undone.</strong></p>
   <button class="btn btn-danger" type="submit">Drop table</button>
-  <a class="btn btn-secondary" href="{{ url_for('table_structure', table=table) }}">Cancel</a>
+  <a class="btn btn-secondary" href="{{ url_for('table_structure', table=table, database=dataset.filename) }}">Cancel</a>
 </form>
 {% endblock %}

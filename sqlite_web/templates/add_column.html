@@ -4,7 +4,7 @@
 
 {% block inner_content %}
 <h3>Add Column</h3>
-<form action="{{ url_for('add_column', table=table) }}" class="form" method="post">
+<form action="{{ url_for('add_column', table=table, database=dataset.filename) }}" class="form" method="post">
   <div class="form-group">
     <label for="id_name">Column name</label>
     <input class="form-control" id="id_name" name="name" type="text" placeholder="my_column" value="{{ name }}" />
@@ -19,6 +19,6 @@
     </select>
   </div>
   <button class="btn btn-primary" type="submit">Add column</button>
-  <a class="btn btn-secondary" href="{{ url_for('table_structure', table=table) }}">Cancel</a>
+  <a class="btn btn-secondary" href="{{ url_for('table_structure', table=table, database=dataset.filename) }}">Cancel</a>
 </form>
 {% endblock %}

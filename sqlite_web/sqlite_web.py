@@ -26,7 +26,7 @@ from getpass import getpass
 from io import TextIOWrapper
 from os.path import isfile, getsize
 
-logging.basicConfig(filename='python.log',level=logging.DEBUG)
+logging.basicConfig(filename='python.log',level=logging.CRITICAL)
 
 # Py2k compat.
 if sys.version_info[0] == 2:
@@ -96,6 +96,7 @@ app = Flask(
 app.config.from_object(__name__)
 dataset = None
 migrator = None
+current_database = ""
 
 #
 # Database metadata objects.
@@ -252,10 +253,14 @@ def database_view():
 
 @app.route('/database/', methods=['GET','POST'])
 def open_db():
+    global current_database
+
     parser = get_option_parser()
     options, args = parser.parse_args()
 
     db = request.args.get('database')
+    current_database = db
+
     initialize_app(db, options.read_only, None, options.url_prefix)
 
     return redirect(url_for('index'))
@@ -461,15 +466,16 @@ def drop_trigger(table):
         name=name,
         table=table)
 
-@app.route('/<table>/content/')
+@app.route('/<table>/content/', methods=['GET', 'POST'])
 @require_table
 def table_content(table):
+    database_switch(request.args.get('database'))
 
     dataset.update_cache(table)
     ds_table = dataset[table]
 
     field_names = ds_table.columns
-    columnsQuery = dataset.query("PRAGMA table_info(%s)" % (table))
+    columnsQuery = dataset.query("PRAGMA table_info(\"%s\")" % (table))
     columns = [f[1] for f in columnsQuery]
 
     return render_template(
@@ -486,7 +492,7 @@ def table_ajax(table):
     dataset.update_cache(table)
     ds_table = dataset[table]
 
-    columnsQuery = dataset.query("PRAGMA table_info(%s)" % (table))
+    columnsQuery = dataset.query("PRAGMA table_info(\"%s\")" % (table))
     columns = [f[1] for f in columnsQuery]
 
     PER_PAGE = data.get('length')
@@ -508,8 +514,8 @@ def table_ajax(table):
 
     additionalQuery += " ORDER BY %s %s" % (columnSortName, sortDir)
 
-    countQuery = """SELECT count(*) FROM %s %s""" % (table, additionalQuery)
-    actualQuery = """SELECT * FROM %s %s LIMIT %s OFFSET %s""" % (table, additionalQuery, PER_PAGE, offset)
+    countQuery = """SELECT count(*) FROM '%s' %s""" % (table, additionalQuery)
+    actualQuery = """SELECT * FROM '%s' %s LIMIT %s OFFSET %s""" % (table, additionalQuery, PER_PAGE, offset)
 
     total = dataset.query(countQuery)
     query = dataset.query(actualQuery)
@@ -580,10 +586,10 @@ def set_table_definition_preference():
 
 def export(table, sql, export_format):
 
-    columnsQuery = dataset.query("PRAGMA table_info(%s)" % (table))
+    columnsQuery = dataset.query("PRAGMA table_info(\"%s\")" % (table))
     columns = [f[1] for f in columnsQuery]
 
-    columnsQuery = dataset.query("PRAGMA table_info(%s)" % (table))
+    columnsQuery = dataset.query("PRAGMA table_info(\"%s\")" % (table))
     columns = [f[1] for f in columnsQuery]
 
     query = dataset.query(sql)
@@ -763,6 +769,11 @@ def _now():
 def _connect_db():
     dataset.connect()
 
+@app.before_request
+def before_request_func():
+    if request.args.get('database') is not None:
+        database_switch(request.args.get('database'))
+
 @app.teardown_request
 def _close_db(exc):
     if not dataset._database.is_closed():
@@ -787,6 +798,17 @@ class PrefixMiddleware(object):
 #
 # Script options.
 #
+def database_switch(passed_in_db):
+    global current_database
+
+    parser = get_option_parser()
+    options, args = parser.parse_args()
+
+    if (passed_in_db != current_database):
+        current_database = passed_in_db
+        initialize_app(passed_in_db, options.read_only, None, options.url_prefix)
+
+    return
 
 def isSQLite3(filename):
     if not isfile(filename):
@@ -954,6 +976,8 @@ def initialize_app(filename, read_only=False, password=None, url_prefix=None):
     dataset.close()
 
 def main():
+    global current_database
+
     # This function exists to act as a console script entry-point.
     parser = get_option_parser()
     options, args = parser.parse_args()
@@ -973,14 +997,16 @@ def main():
                 else:
                     break
 
+    current_database = args[0]
+
     # Initialize the dataset instance and (optionally) authentication handler.
-    initialize_app(args[0], options.read_only, password, options.url_prefix)
+    initialize_app(current_database, options.read_only, password, options.url_prefix)
 
     if options.browser:
         open_browser_tab(options.host, options.port)
 
     if password:
-        key = b'sqlite-web-' + args[0].encode('utf8') + password.encode('utf8')
+        key = b'sqlite-web-' + current_database.encode('utf8') + password.encode('utf8')
         app.secret_key = hashlib.sha256(key).hexdigest()
 
     app.run(host=options.host, port=options.port, debug=options.debug, ssl_context='adhoc')

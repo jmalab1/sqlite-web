@@ -21,6 +21,6 @@
     </select>
   </div>
   <button class="btn btn-primary" type="submit">Add index</button>
-  <a class="btn btn-secondary" href="{{ url_for('table_structure', table=table) }}">Cancel</a>
+  <a class="btn btn-secondary" href="{{ url_for('table_structure', table=table, database=dataset.filename) }}">Cancel</a>
 </form>
 {% endblock %}
